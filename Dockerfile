@@ -1,11 +1,14 @@
 # build stage
-FROM iron/go:dev AS build-env
-ADD . /src
-RUN go get -u github.com/satori/go.uuid
-RUN cd /src && go build -o main
+FROM golang:alpine AS build-env
+WORKDIR /go/src/stage
+ADD . /go/src/stage
+RUN apk add --no-cache git mercurial && go get ./...
+RUN go build -o main
 
-# final stage
+# ENTRYPOINT ["./main"]
+
+# run stage
 FROM alpine
 WORKDIR /app
-COPY --from=build-env /src/ /app/
-ENTRYPOINT ["./main"]
+COPY --from=build-env /go/src/stage/main /app/
+ENTRYPOINT ./main
