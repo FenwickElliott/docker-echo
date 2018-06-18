@@ -1,10 +1,10 @@
-FROM golang:1.10
+# build stage
+FROM golang:alpine AS build-env
+ADD . /src
+RUN cd /src && go build -o main
 
-RUN mkdir /app && mkdir /go/src/app
-ADD . /go/src/app
-WORKDIR /go/src/app
-
-RUN go build -o /app/main .
-
-CMD ["/app/main"]
-EXPOSE 9090
+# final stage
+FROM alpine
+WORKDIR /app
+COPY --from=build-env /src/main /app/
+ENTRYPOINT ./main
